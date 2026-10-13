@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monitor de menções ao setor bancário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#EEF2F5; --superficie:#FFFFFF; --tinta:#18212B; --apagado:#5B6875; --linha:#CAD3DC;
+  --acao:#1F4E8C; --acao-texto:#FFFFFF;
+  --s0:#CAD3DC; --s1:#D4B24A; --s2:#E08A3C; --s3:#CF5737; --s4:#AE2639; --s5:#73102E;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --papel:#11171E; --superficie:#19222C; --tinta:#E4EAF0; --apagado:#93A1AF; --linha:#2C3845;
+    --acao:#6E9FE0; --acao-texto:#0E1620; --s0:#3A4756; color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papel);color:var(--tinta);font:16px/1.5 "Public Sans",system-ui,sans-serif}
+a{color:var(--acao)}
+:focus-visible{outline:3px solid var(--acao);outline-offset:2px}
+.topo{padding:2rem clamp(1rem,4vw,3rem) 1rem;max-width:72rem;margin:0 auto}
+h1{font-size:1.75rem;font-weight:800;letter-spacing:-.02em;margin:0 0 .25rem}
+.topo p{margin:0;color:var(--apagado)}
+.grade{display:grid;grid-template-columns:16rem 1fr;gap:2rem;padding:1rem clamp(1rem,4vw,3rem) 3rem;max-width:72rem;margin:0 auto}
+@media (max-width:760px){.grade{grid-template-columns:1fr}}
+h2{font-size:1rem;font-weight:700;margin:0 0 .75rem}
+.perfis ul{list-style:none;margin:0 0 1rem;padding:0}
+.perfis li{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--linha)}
+.perfis .pausado{color:var(--apagado);text-decoration:line-through}
+.perfis form{margin:0}
+.link{background:none;border:0;color:var(--acao);font:inherit;font-size:.875rem;cursor:pointer;padding:0}
+input[type=text]{width:100%;padding:.55rem .7rem;border:1px solid var(--linha);border-radius:6px;background:var(--superficie);color:var(--tinta);font:inherit}
+.botao{margin-top:.5rem;width:100%;padding:.55rem;border:0;border-radius:6px;background:var(--acao);color:var(--acao-texto);font:inherit;font-weight:700;cursor:pointer}
+.botao.secundario{background:transparent;color:var(--acao);border:1px solid var(--acao)}
+.abas{display:flex;gap:1.25rem;margin-bottom:1rem;border-bottom:1px solid var(--linha)}
+.abas a{padding:.4rem 0;text-decoration:none;color:var(--apagado);font-weight:500}
+.abas a[aria-current]{color:var(--tinta);box-shadow:inset 0 -3px 0 var(--tinta)}
+.post{display:grid;grid-template-columns:3.25rem 1fr;background:var(--superficie);margin-bottom:.75rem;border-radius:4px;overflow:hidden}
+.trilho{display:flex;align-items:flex-start;justify-content:center;padding-top:.9rem;font-weight:800;font-size:1.5rem;color:#fff}
+.sev-0{background:var(--s0);color:var(--tinta)} .sev-1{background:var(--s1);color:#2a2100}
+.sev-2{background:var(--s2)} .sev-3{background:var(--s3)} .sev-4{background:var(--s4)} .sev-5{background:var(--s5)}
+.corpo{padding:.85rem 1rem}
+.cab{display:flex;flex-wrap:wrap;gap:.25rem 1rem;font-size:.875rem;color:var(--apagado)}
+.cab strong{color:var(--tinta)}
+.just{margin:.4rem 0}
+.trecho{margin:.4rem 0;padding-left:.75rem;border-left:3px solid var(--linha);color:var(--apagado);font-style:italic}
+.temas{font-size:.875rem;color:var(--apagado)}
+.erro{color:var(--s4);font-size:.875rem}
+.vazio{padding:2rem;background:var(--superficie);border-radius:4px;color:var(--apagado)}
+</style>
+</head>
+<body>
+<header class="topo">
+  <h1>Monitor de menções ao setor bancário</h1>
+  <p>{{ perfis|selectattr('ativo')|list|length }} perfis monitorados e {{ total_criticos }} posts com crítica identificada. <a href="/status">Ver status do dia por perfil</a></p>
+</header>
+<div class="grade">
+  <aside class="perfis">
+    <h2>Perfis</h2>
+    <ul>
+      {% for p in perfis %}
+      <li>
+        <span class="{{ '' if p.ativo else 'pausado' }}">@{{ p.username }}</span>
+        <form method="post" action="{{ url_for('alternar_perfil', perfil_id=p.id) }}">
+          <button class="link">{{ 'Pausar' if p.ativo else 'Retomar' }}</button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+    <form method="post" action="{{ url_for('adicionar_perfil') }}">
+      <label for="u" class="temas">Adicionar perfil (conta comercial ou criador)</label>
+      <input id="u" type="text" name="username" placeholder="@usuario" required>
+      <button class="botao">Adicionar perfil</button>
+    </form>
+    <form method="post" action="{{ url_for('rodar_agora') }}">
+      <button class="botao secundario">Verificar agora</button>
+    </form>
+  </aside>
+  <main>
+    <nav class="abas">
+      <a href="?filtro=criticos" {% if filtro=='criticos' %}aria-current="page"{% endif %}>Críticas</a>
+      <a href="?filtro=todos" {% if filtro!='criticos' %}aria-current="page"{% endif %}>Todos os posts</a>
+    </nav>
+    {% for post in posts %}{% set a = post.analise or {} %}
+    <article class="post">
+      <div class="trilho sev-{{ post.severidade }}" title="Severidade {{ post.severidade }} de 5">{{ post.severidade }}</div>
+      <div class="corpo">
+        <div class="cab">
+          <strong>@{{ post.username }}</strong>
+          <span>{{ post.publicado_em.strftime('%d/%m/%Y %H:%M') }}</span>
+          <span>{{ a.get('tom', '') }}</span>
+          <a href="{{ post.permalink }}" target="_blank" rel="noopener">Abrir no Instagram</a>
+        </div>
+        {% if post.erro %}<p class="erro">Análise falhou: {{ post.erro }}</p>{% endif %}
+        {% if a.get('justificativa') %}<p class="just">{{ a['justificativa'] }}</p>{% endif %}
+        {% if a.get('trecho_relevante') %}<p class="trecho">{{ a['trecho_relevante'] }}</p>{% endif %}
+        {% if a.get('alvo_da_critica') or a.get('temas') %}
+        <p class="temas">
+          {% if a.get('alvo_da_critica') %}Alvo: {{ a['alvo_da_critica']|join(', ') }}. {% endif %}
+          {% if a.get('temas') %}Temas: {{ a['temas']|join(', ') }}.{% endif %}
+          {% if a.get('confianca') is not none %}Confiança {{ (a['confianca']*100)|round|int }}%.{% endif %}
+        </p>
+        {% endif %}
+      </div>
+    </article>
+    {% else %}
+    <div class="vazio">Nenhum post por aqui ainda. Adicione um perfil e clique em “Verificar agora”.</div>
+    {% endfor %}
+  </main>
+</div>
+</body>
+</html>
