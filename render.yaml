@@ -1,0 +1,46 @@
+# Mesmo modelo do Despesas Pessoais: web service no Render + Postgres no Supabase + Resend.
+# O agendamento roda no GitHub Actions (.github/workflows/monitor.yml), sem custo de Cron Job.
+services:
+  - type: web
+    name: monitor-instagram
+    runtime: python
+    plan: free            # troque para starter se não quiser o "sono" após 15 min sem acesso
+    region: virginia
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --timeout 300
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.4
+      - key: DATABASE_URL        # connection string do Supabase (Session pooler)
+        sync: false
+      - key: IG_USER_ID
+        sync: false
+      - key: IG_ACCESS_TOKEN
+        sync: false
+      - key: GRAPH_VERSION
+        value: v21.0
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-5-5
+      - key: SEVERIDADE_ALERTA
+        value: "2"
+      - key: RESEND_API_KEY
+        sync: false
+      - key: ALERTA_EMAIL_DE     # remetente num domínio verificado no Resend
+        value: Monitor NexaPI <alertas@nexapi.com.br>
+      - key: ALERTA_EMAIL_PARA   # um ou mais, separados por vírgula
+        sync: false
+      - key: WEBHOOK_URL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: DASHBOARD_USER
+        value: admin
+      - key: DASHBOARD_PASSWORD
+        generateValue: true
+      - key: CRON_TOKEN
+        generateValue: true
