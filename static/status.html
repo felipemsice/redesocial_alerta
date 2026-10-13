@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Status do dia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/status.css">
+</head>
+<body>
+<div class="pagina">
+  <nav class="voltar"><a href="/">Voltar ao painel</a></nav>
+
+  <form class="controles" id="controles">
+    <label>
+      <span>Perfil</span>
+      <select id="perfil" required></select>
+    </label>
+    <div class="data">
+      <button type="button" id="anterior" aria-label="Dia anterior">‹</button>
+      <label>
+        <span>Dia</span>
+        <input type="date" id="dia" required>
+      </label>
+      <button type="button" id="proximo" aria-label="Próximo dia">›</button>
+      <button type="button" id="hoje" class="texto">Hoje</button>
+    </div>
+  </form>
+
+  <section class="manchete" id="manchete" aria-live="polite">
+    <p class="estado" id="estado"></p>
+    <h1 id="frase">Carregando…</h1>
+    <p class="meta" id="meta"></p>
+  </section>
+
+  <section class="dia" aria-label="Linha do tempo do dia">
+    <div class="regua" id="regua">
+      <div class="trilha" id="trilha"></div>
+    </div>
+    <div class="horas" aria-hidden="true">
+      <span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>24h</span>
+    </div>
+  </section>
+
+  <section class="historico">
+    <h2>Últimos 30 dias</h2>
+    <div class="faixa" id="faixa" role="list"></div>
+    <p class="legenda-faixa">
+      <span class="amostra vazio"></span> sem posts
+      <span class="amostra s0"></span> posts sem crítica
+      <span class="amostra s3"></span> com crítica (cor = severidade máxima)
+    </p>
+  </section>
+
+  <section>
+    <h2 id="titulo-posts">Posts do dia</h2>
+    <div id="posts"></div>
+  </section>
+
+  <p class="rodape" id="rodape"></p>
+</div>
+<script src="/static/status.js"></script>
+</body>
+</html>
