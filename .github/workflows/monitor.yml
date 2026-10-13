@@ -1,0 +1,21 @@
+name: Verificar perfis
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # a cada 15 min (UTC); o GitHub pode atrasar alguns minutos
+  workflow_dispatch: {}      # botão "Run workflow" para rodar na mão
+
+jobs:
+  rodar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Chamar /rodar no Render
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_TOKEN: ${{ secrets.CRON_TOKEN }}
+        run: |
+          # o 1º request pode demorar ~1 min se o serviço free estiver "dormindo"
+          curl --fail-with-body --silent --show-error --retry 3 --retry-delay 20 \
+               --max-time 300 -X POST "$APP_URL/rodar" \
+               -H "X-Cron-Token: $CRON_TOKEN"
